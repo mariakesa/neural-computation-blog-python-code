@@ -48,15 +48,18 @@ class MakeTestTrain():
         for k in data_dct.keys():
 
             stimuli = data_dct[k]['movie_stim_table'].loc[data_dct[k]
-                                                          ['movie_stim_table']['repeat'] == 1]
-            test_movies = np.random.randint(0, 900, 200)
+                                                          ['movie_stim_table']['repeat'] == 2]
+            test_movies = np.random.choice(range(900), 200, replace=False)
+            print(test_movies)
             # Generate an array containing all possible indices from 0 to 900 (inclusive)
-            all_indices = np.arange(899)
+            all_indices = np.arange(900)
             # Get the test indices as the complement of the train indices
             train_movies = np.setdiff1d(all_indices, test_movies)
             print(train_movies)
-            train_inds = np.array(stimuli.loc[train_movies]['start'])
-            test_inds = np.array(stimuli.loc[test_movies]['start'])
+            train_inds = stimuli.loc[stimuli['frame'].isin(
+                train_movies), 'start'].values
+            test_inds = stimuli.loc[stimuli['frame'].isin(
+                test_movies), 'start'].values
             print(train_inds)
 
             y_train_movie = data_dct[k]['neural_responses'][:, train_inds]
