@@ -54,4 +54,30 @@ def do_PCA():
     # print(dino_movie_feats.shape)
 
 
-do_PCA()
+def do_TSNE():
+    absolute_path = os.path.dirname(__file__)
+    relative_path1 = "dino_features/dino_movie_one.npy"
+    relative_path2 = "dino_features/dino_natural_scenes.npy"
+    full_path1 = os.path.join(absolute_path, relative_path1)
+    full_path2 = os.path.join(absolute_path, relative_path2)
+
+    dino_movie_feats = np.load(full_path1)
+    dino_natural_scenes_feats = np.load(full_path2)
+
+    stim_names = ['dino movies features', 'dino scene features']
+    stims = [dino_movie_feats, dino_natural_scenes_feats]
+
+    tsne_features = []
+    for s in stims:
+        tsne_feat = TSNE(n_components=2).fit_transform(s)
+        tsne_features.append(tsne_feat)
+
+    plt.scatter(tsne_features[0][:, 0], tsne_features[0][:, 1],
+                cmap='magma', c=np.arange(dino_movie_feats.shape[0]))
+    plt.scatter(tsne_features[1][:, 0], tsne_features[1][:, 1],
+                cmap='viridis', c=np.arange(dino_natural_scenes_feats.shape[0]))
+    plt.show()
+
+
+# do_PCA()
+do_TSNE()
