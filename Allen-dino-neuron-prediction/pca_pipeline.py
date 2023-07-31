@@ -4,6 +4,7 @@ import numpy as np
 from transformers import ViTImageProcessor, ViTModel
 import torch
 from sklearn.decomposition import PCA
+from sklearn.cross_decomposition import PLSRegression, CCA, PLSCanonical
 
 # Get data
 # We want to get all the experiments with one cre line-- that's round enough for us
@@ -50,24 +51,24 @@ class MakeTestTrain():
     def average_responses_images(self, neural_responses, scene_stim_table):
 
         num_neurons, num_timepoints = neural_responses.shape
-        num_frames = len(scene_stim_table)
+        num_frames = 118
 
         # Create an array to store the average response for each frame
         avg_responses = np.zeros((num_neurons, num_frames))
 
         # Group scene_stim_table by 'repeat' to handle frame repeats efficiently
-        grouped_table = scene_stim_table.groupby('repeat')
+        grouped_table = scene_stim_table.groupby('frame')
 
         # Iterate over each group (i.e., frame repeat)
         for repeat, group in grouped_table:
-            start_idx_list = group['start'].astype(int)
-            end_idx_list = group['end'].astype(int)
+            start_idx_list = list(group['start'].astype(int))
+            end_idx_list = list(group['end'].astype(int))
 
             # Calculate the average response for the current frame repeat
             for i, (start_idx, end_idx) in enumerate(zip(start_idx_list, end_idx_list)):
                 # The last frame overlaps with the beginning frame of the previous stimulus
                 frame_response = neural_responses[:, start_idx:end_idx]
-                avg_responses[:, group.index[i]] = frame_response.mean(axis=1)
+                avg_responses[:, i] = frame_response.mean(axis=1)
 
         return avg_responses
 
@@ -99,6 +100,34 @@ class MakeTestTrain():
 
         return reduced_responses.T
 
+    def PLRS(self, avg_responses, exp):
+        np.random.seed = 7879
+        if exp == 'movies':
+            test_inds = np.random.choice(range(900), 200, replace=False)
+            all_inds = np.arange(900)
+            # Get the test indices as the complement of the train indices
+            train_inds = np.setdiff1d(all_inds, test_inds)
+            embeddings = np.load(
+                '/home/maria/neural-computation-blog-python-code/Allen-dino-neuron-prediction/dino_features/dino_movie_one.npy')
+        elif exp == 'images':
+            test_inds = np.random.choice(range(118), 30, replace=False)
+            # Generate an array containing all possible indices from 0 to 900 (inclusive)
+            all_inds = np.arange(900)
+            # Get the test indices as the complement of the train indices
+            test_inds = np.setdiff1d(all_inds, test_inds)
+            embeddings = np.load(
+                '/home/maria/neural-computation-blog-python-code/Allen-dino-neuron-prediction/dino_features/dino_natural_scenes.npy')
+        train_response = avg_responses[:, train_inds].T
+        test_response = avg_responses[:, test_inds].T
+        train_embeddings = embeddings[train_inds, :].T
+        test_embeddings = embeddings[test_inds, :].T
+        print(train_response.shape, test_response.shape,
+              train_embeddings.shape, test_embeddings.shape)
+        plsca = PLSCanonical(n_components=4)
+        plsca.fit(train_embeddings, train_response)
+        X_c, Y_c = plsca.transform(test_embeddings, test_response)
+        np.save('results_X.npy', X_c, Y_c)
+
     def fit_transform(self):
         eids = self._get_eids()
         data_dct = {}
@@ -106,14 +135,18 @@ class MakeTestTrain():
             data_dct[eid] = {}
         for eid in eids:
             data_set = self.boc.get_ophys_experiment_data(eid)
-            data_dct[eid]['movie_stim_table'] = data_set.get_stimulus_table(
+            df_movie_stim_table = data_set.get_stimulus_table(
                 'natural_movie_one')
+            # Exclude non-movie stimuli
+            df_movie_stim_table = df_movie_stim_table[df_movie_stim_table['frame'] != -1]
+            data_dct[eid]['movie_stim_table'] = df_movie_stim_table
             # data_dct[eid]['movie_stim'] = self.data_set.get_stimulus_template(
             # 'natural_movie_one')
             # Make an extra column with the number of the repeat in the scenes
             # table
             df_scene_table = data_set.get_stimulus_table(
                 'natural_scenes')
+            df_scene_table = df_scene_table[df_scene_table['frame'] != -1]
             df_sorted = df_scene_table.sort_values(
                 by=["frame", "start"], ascending=[True, True])
             df_sorted['repeat'] = df_sorted.groupby('frame').cumcount()
@@ -121,7 +154,9 @@ class MakeTestTrain():
             data_dct[eid]['neural_responses'] = data_set.get_dff_traces()[1]
             avg_responses_movie = self.average_responses_movie(
                 data_dct[eid]['neural_responses'], data_dct[eid]['movie_stim_table'])
-            print(avg_responses_movie)
+
+            self.PLRS(avg_responses_movie, 'movies')
+
             # data_dct[eid]['natural_stim'] = self.data_set.get_stimulus_template(
             # 'natural_scenes')
             # print(np.unique(natural_stim_table.iloc[:, 0]))
