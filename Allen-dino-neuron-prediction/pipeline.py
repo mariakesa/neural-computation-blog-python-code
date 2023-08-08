@@ -11,6 +11,11 @@ import torch
 # experiment B.
 # Run regression experiments. Get data for all selected cell specimen and put them
 # in the corresponding df.
+# Regression experiments -- record variance explained on test set:
+# Per repeat, for mean
+# For raw images and videos
+# For DINO features images and videos
+# For PCA features of images and videos
 
 output_dir = '/media/maria/DATA/AllenData'
 
@@ -50,22 +55,17 @@ class MakeTestTrain():
             stimuli = data_dct[k]['movie_stim_table'].loc[data_dct[k]
                                                           ['movie_stim_table']['repeat'] == 2]
             test_movies = np.random.choice(range(900), 200, replace=False)
-            print(test_movies)
             # Generate an array containing all possible indices from 0 to 900 (inclusive)
             all_indices = np.arange(900)
             # Get the test indices as the complement of the train indices
             train_movies = np.setdiff1d(all_indices, test_movies)
-            print(train_movies)
             train_inds = stimuli.loc[stimuli['frame'].isin(
                 train_movies), 'start'].values
             test_inds = stimuli.loc[stimuli['frame'].isin(
                 test_movies), 'start'].values
-            print(train_inds)
 
             y_train_movie = data_dct[k]['neural_responses'][:, train_inds]
             y_test_movie = data_dct[k]['neural_responses'][:, test_inds]
-            print(y_train_movie.shape)
-            print(y_test_movie.shape)
 
     def fit_transform(self):
         eids = self._get_eids()

@@ -5,6 +5,8 @@ from transformers import ViTImageProcessor, ViTModel
 import torch
 from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import PLSRegression, CCA, PLSCanonical
+from sklearn.linear_model import Ridge
+from sklearn.metrics import r2_score
 
 # Get data
 # We want to get all the experiments with one cre line-- that's round enough for us
@@ -92,11 +94,27 @@ class MakeTestTrain():
         return avg_responses
 
     def perform_pca(self, average_responses, num_components):
+        import matplotlib.pyplot as plt
         # Initialize PCA with the desired number of components
         pca = PCA(n_components=num_components)
 
         # Fit the PCA model to the average_responses data and transform it
         reduced_responses = pca.fit_transform(average_responses.T)
+        print(reduced_responses.shape)
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Plot features for natural movie sequence
+        ax.scatter(
+            reduced_responses[:, 0],
+            reduced_responses[:, 1],
+            reduced_responses[:, 2],
+            c=np.arange(0, 118),
+            cmap='bwr',
+            label='Responses to Natural Movies'
+        )
+        plt.show()
 
         return reduced_responses.T
 
@@ -119,14 +137,42 @@ class MakeTestTrain():
                 '/home/maria/neural-computation-blog-python-code/Allen-dino-neuron-prediction/dino_features/dino_natural_scenes.npy')
         train_response = avg_responses[:, train_inds].T
         test_response = avg_responses[:, test_inds].T
-        train_embeddings = embeddings[train_inds, :].T
-        test_embeddings = embeddings[test_inds, :].T
+        train_embeddings = embeddings[train_inds, :]
+        test_embeddings = embeddings[test_inds, :]
         print(train_response.shape, test_response.shape,
               train_embeddings.shape, test_embeddings.shape)
         plsca = PLSCanonical(n_components=4)
         plsca.fit(train_embeddings, train_response)
         X_c, Y_c = plsca.transform(test_embeddings, test_response)
-        np.save('results_X.npy', X_c, Y_c)
+        np.save('results_X.npy', X_c)
+        np.save('results_Y.npy', Y_c)
+        # You can adjust the alpha value as needed
+        ridge_model = Ridge(alpha=10.0)
+
+        # Fit the model to all neurons jointly
+        ridge_model.fit(train_embeddings, train_response)
+        # Make predictions for all neurons on the test set
+        y_pred_all_neurons = ridge_model.predict(test_embeddings)
+
+        # List to store R2 scores for each neuron
+        r2_scores_per_neuron = []
+
+        # Iterate through each neuron's index
+        for neuron_index in range(test_response.shape[1]):
+            # Get the true and predicted values for the current neuron
+            y_true_neuron = test_response[:, neuron_index]
+            y_pred_neuron = y_pred_all_neurons[:, neuron_index]
+
+            # Calculate the R2 score for the current neuron
+            r2_score_neuron = r2_score(y_true_neuron, y_pred_neuron)
+
+            # Append the R2 score to the list
+            r2_scores_per_neuron.append(r2_score_neuron)
+
+        # Print the R2 scores for each neuron
+        for neuron_index, r2_score_neuron in enumerate(r2_scores_per_neuron):
+            print(
+                f"R2 Score for Neuron {neuron_index + 1}: {r2_score_neuron:.4f}")
 
     def fit_transform(self):
         eids = self._get_eids()
@@ -154,8 +200,11 @@ class MakeTestTrain():
             data_dct[eid]['neural_responses'] = data_set.get_dff_traces()[1]
             avg_responses_movie = self.average_responses_movie(
                 data_dct[eid]['neural_responses'], data_dct[eid]['movie_stim_table'])
-
-            self.PLRS(avg_responses_movie, 'movies')
+            avg_responses_images = self.average_responses_images(
+                data_dct[eid]['neural_responses'], data_dct[eid]['scene_stim_table'])
+            #self.PLRS(avg_responses_movie, 'movies')
+            #self.perform_pca(avg_responses_movie, 3)
+            self.perform_pca(avg_responses_images, 3)
 
             # data_dct[eid]['natural_stim'] = self.data_set.get_stimulus_template(
             # 'natural_scenes')
@@ -177,4 +226,8 @@ class MakeTestTrain():
         '''
 
 
-MakeTestTrain('Emx1-IRES-Cre').fit_transform()
+# MakeTestTrain('Emx1-IRES-Cre').fit_transform()
+
+# MakeTestTrain('Vip-IRES-Cre').fit_transform()
+
+MakeTestTrain('Cux2-CreERT2').fit_transform()
