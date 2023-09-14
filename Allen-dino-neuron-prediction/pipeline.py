@@ -57,7 +57,7 @@ class MakeTestTrain():
             test_movies = np.random.choice(range(900), 200, replace=False)
             # Generate an array containing all possible indices from 0 to 900 (inclusive)
             all_indices = np.arange(900)
-            # Get the test indices as the complement of the train indices
+            # Get the train indices as the complement of the test indices
             train_movies = np.setdiff1d(all_indices, test_movies)
             train_inds = stimuli.loc[stimuli['frame'].isin(
                 train_movies), 'start'].values
