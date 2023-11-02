@@ -11,7 +11,7 @@ class Stimulus:
     def __init__(self):
         self.cache_path=self.read_cache_path()
         print(self.cache_path)
-        self.save_path=self.read_cache_path()
+        self.save_path=self.read_save_path()
 
     def read_cache_path(self):
         f = open('config.json')
@@ -28,7 +28,7 @@ class Stimulus:
     def write_paths_to_json(self):
         f = open('paths.json', "r")
         path_dct = json.load(f)
-        path_dct['movie_one_path']= self.save_path+'movie_one.npy'
+        path_dct['movie_one_path']= str(Path(self.save_path) / 'movie_one.npy')
         f.close()
         f = open('paths.json', "w")
         json.dump(path_dct, f)
@@ -56,7 +56,7 @@ class Stimulus:
         print(movie_one.shape)
         #movie_two = data_set.get_stimulus_template('natural_movie_two')
         movie_three = data_set.get_stimulus_template('natural_movie_three')
-        np.save('movie_one.npy', movie_one)
+        np.save(str(Path(self.save_path)/ 'movie_one.npy'), movie_one)
 
         self.write_paths_to_json()
         '''

@@ -1,3 +1,4 @@
 {
-    "cache_path": "/media/maria/DATA/AllenData"
+    "cache_path": "/media/maria/DATA/AllenData",
+    "save_path": "/media/maria/DATA/BrainObservatoryProcessedData"
 }
