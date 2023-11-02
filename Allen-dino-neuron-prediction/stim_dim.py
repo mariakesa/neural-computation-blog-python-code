@@ -79,5 +79,5 @@ def do_TSNE():
     plt.show()
 
 
-# do_PCA()
-do_TSNE()
+do_PCA()
+#do_TSNE()
