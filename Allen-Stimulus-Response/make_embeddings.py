@@ -3,7 +3,7 @@ from pathlib import Path
 from config import cache_path, save_path, embeddings_dct
 import numpy as np 
 import torch
-from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProcessor
+from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProcessor, AutoModel, AutoImageProcessor
 import os
 
 
@@ -63,12 +63,14 @@ class StimPrep:
             embeddings[i, :] = cls
         return embeddings
         
-    def make_dino(self):
+    def make_dino(self, stims):
         stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
         processor = ViTImageProcessor.from_pretrained('facebook/dino-vitb8')
         model = ViTModel.from_pretrained('facebook/dino-vitb8')
+        embeddings  = self.process_stims(stims, processor, model)
+        return embeddings
 
-    def make_clip(self,stims):
+    def make_clip(self, stims):
         stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
         model = CLIPVisionModel.from_pretrained("openai/clip-vit-base-patch32")
         processor = AutoProcessor.from_pretrained("openai/clip-vit-base-patch32")
@@ -84,4 +86,7 @@ class StimPrep:
             stims=self.load_data(stim_path)
             if model=='CLIP':
                 embeddings = self.make_clip(stims)
+                np.save(full_path, embeddings)
+            if model=='DINO':
+                embeddings = self.make_dino(stims)
                 np.save(full_path, embeddings)

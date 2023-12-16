@@ -20,6 +20,13 @@ class Pipeline:
                 print(f'CLIP {p} already exists!')
             else:
                 self.stim_prep.make_embedding(emb_path, raw_stim, model='CLIP')
+        for i, p in enumerate(embeddings_dct['dino']):
+            emb_path = save_path / Path(p)
+            raw_stim = embeddings_dct['raw_stims'][i]
+            if os.path.exists(emb_path):
+                print(f'DINO {p} already exists!')
+            else:
+                self.stim_prep.make_embedding(emb_path, raw_stim, model='DINO')
         
 Pipeline().run_pipeline()
 
