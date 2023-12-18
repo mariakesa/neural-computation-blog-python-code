@@ -2,16 +2,17 @@ from config import cache_path, save_path, embeddings_dct
 from pathlib import Path
 from make_embeddings import StimPrep
 import os
-
+from allensdk.core.brain_observatory_cache import BrainObservatoryCache
+from config import cache_path, save_path
+from pathlib import Path
+from make_data import SingleEIDDat
 
 class Pipeline:
     def __init__(self):
         self.stim_prep=StimPrep()
+        
 
     def create_embeddings(self):
-        pass
-
-    def run_pipeline(self):
         #Check if stimulus embeddings exist, start with CLIP
         for i, p in enumerate(embeddings_dct['clip']):
             emb_path = save_path / Path(p)
@@ -27,6 +28,13 @@ class Pipeline:
                 print(f'DINO {p} already exists!')
             else:
                 self.stim_prep.make_embedding(emb_path, raw_stim, model='DINO')
+
+    def run_pipeline(self, eids):
+        self.create_embeddings()
+        self.eid_dat={}
+        for eid in eids:
+            self.eid_dat[eid] = SingleEIDDat(eid).make_train_test_data()
+        print(self.eid_dat)
         
-Pipeline().run_pipeline()
+Pipeline().run_pipeline([501559087])
 
