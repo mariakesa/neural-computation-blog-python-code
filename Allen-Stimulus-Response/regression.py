@@ -1,5 +1,6 @@
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
 
 def ridge_regression(dat_dct):
 
@@ -17,3 +18,13 @@ def ridge_regression(dat_dct):
     r2 = r2_score(y_test.T, predictions)
 
     print("R-squared score:", r2)
+
+    scores=[]
+    for i in range(0,y_test.shape[0]):
+        scores.append(r2_score(y_test.T[:,i], predictions[:,i]))
+        print(r2_score(y_test.T[:,i], predictions[:,i]))
+        #plt.plot(y_test.T[:,i],label='test')
+        #plt.plot(predictions[:,i],label='pred')
+        #plt.title(str(r2_score(y_test.T[:,i], predictions[:,i])))
+        #plt.legend()
+        #plt.show()
