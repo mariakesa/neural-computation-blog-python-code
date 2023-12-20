@@ -1,4 +1,4 @@
-from config import cache_path, save_path, embeddings_dct
+from config import cache_path, save_path, embeddings_dct, stimuli_dct
 from pathlib import Path
 from make_embeddings import StimPrep
 import os
@@ -6,6 +6,7 @@ from allensdk.core.brain_observatory_cache import BrainObservatoryCache
 from config import cache_path, save_path
 from pathlib import Path
 from make_data import SingleEIDDat
+from regression import ridge_regression
 
 class Pipeline:
     def __init__(self):
@@ -34,7 +35,10 @@ class Pipeline:
         self.eid_dat={}
         for eid in eids:
             self.eid_dat[eid] = SingleEIDDat(eid).make_train_test_data()
+            print(self.eid_dat[eid])
+            ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['clip']])
         print(self.eid_dat)
+
         
 Pipeline().run_pipeline([501559087])
 
