@@ -37,8 +37,8 @@ class Pipeline:
             self.eid_dat[eid] = SingleEIDDat(eid).make_train_test_data()
             print(self.eid_dat[eid])
             ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['clip']])
-        print(self.eid_dat)
+        #print(self.eid_dat)
 
         
-Pipeline().run_pipeline([501559087])
+Pipeline().run_pipeline([566752133])
 
