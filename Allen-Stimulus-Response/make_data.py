@@ -13,6 +13,8 @@ class SingleEIDDat:
                 Path(cache_path) / 'brain_observatory_manifest.json'))
         
         self.dataset = boc.get_ophys_experiment_data(eid)
+        self.cell_ids = self.dataset.get_cell_specimen_ids()
+        print('My cell id\'s: ', self.cell_ids)
 
     def make_data_dct(self):
         self.data_dct={}
