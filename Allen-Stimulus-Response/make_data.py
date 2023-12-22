@@ -48,5 +48,5 @@ class SingleEIDDat:
         for model in self.embeddings.keys():
             embedding = self.embeddings[model]
             train_test_data[model] = self.make_regression_data(embedding)
-        print('Boom!', train_test_data)
+        #print('Boom!', train_test_data)
         return train_test_data

@@ -44,9 +44,10 @@ def ridge_regression(dat_dct):
         #plt.title(str(r2_score(y_test.T[:,i], predictions[:,i])))
         #plt.legend()
         #plt.show()
-    print(len(scores))
-    scores=np.array(scores)
-    plt.hist(scores[scores>0.1])
-    plt.show()
+    #print(len(scores))
+    #scores=np.array(scores)
+    #plt.hist(scores[scores>0.1])
+    #plt.show()
+    return scores
 
     

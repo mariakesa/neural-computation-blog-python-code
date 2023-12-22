@@ -7,6 +7,7 @@ from config import cache_path, save_path
 from pathlib import Path
 from make_data import SingleEIDDat
 from regression import ridge_regression
+import pandas as pd
 
 class Pipeline:
     def __init__(self):
@@ -34,9 +35,17 @@ class Pipeline:
         self.create_embeddings()
         self.eid_dat={}
         for eid in eids:
-            self.eid_dat[eid] = SingleEIDDat(eid).make_train_test_data()
+            dat=SingleEIDDat(eid)
+            self.eid_dat[eid] = dat.make_train_test_data()
+            cell_ids=dat.cell_ids
             print(self.eid_dat[eid])
-            ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['clip']])
+            var_exp_clip=ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['clip']])
+            var_exp_dino =ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['dino']])
+            df=pd.DataFrame()
+            df['cell_ids']=cell_ids
+            df['var_exp_clip']=var_exp_clip
+            df['var_exp_dino']=var_exp_dino
+            df.to_csv('first_q_test.csv')
         #print(self.eid_dat)
 
         
