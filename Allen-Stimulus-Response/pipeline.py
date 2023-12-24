@@ -37,15 +37,17 @@ class Pipeline:
         for eid in eids:
             dat=SingleEIDDat(eid)
             self.eid_dat[eid] = dat.make_train_test_data()
+            print('Hello ',self.eid_dat[eid])
             cell_ids=dat.cell_ids
-            print(self.eid_dat[eid])
-            var_exp_clip=ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['clip']])
-            var_exp_dino =ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['dino']])
-            df=pd.DataFrame()
-            df['cell_ids']=cell_ids
-            df['var_exp_clip']=var_exp_clip
-            df['var_exp_dino']=var_exp_dino
-            df.to_csv('first_q_test.csv')
+            #print(self.eid_dat[eid])
+            for trial in range(10):
+                var_exp_clip=ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['clip']][trial])
+                var_exp_dino =ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['dino']][trial])
+                df=pd.DataFrame()
+                df['cell_ids']=cell_ids
+                df['var_exp_clip']=var_exp_clip
+                df['var_exp_dino']=var_exp_dino
+                df.to_csv('first_q_test.csv')
         #print(self.eid_dat)
 
         

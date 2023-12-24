@@ -31,15 +31,19 @@ class SingleEIDDat:
                 self.embeddings[stimuli_dct[stimulus][model]] = np.load(Path(save_path)/Path(stimuli_dct[stimulus][model]))
 
     def make_regression_data(self, embedding):
-        np.random.seed = 7879
-        stimuli = self.data_dct['movie_stim_table'].loc[self.data_dct['movie_stim_table']['repeat'] == 9]
-        print(stimuli)
+        trials_dct={}
+        for trial in range(10):
+            np.random.seed = 7879
+            stimuli = self.data_dct['movie_stim_table'].loc[self.data_dct['movie_stim_table']['repeat'] == trial]
+            if trial==0:
+                print(stimuli)
 
-        X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=42)
-        y_train=self.data_dct['neural_responses'][:,y_train_inds]
-        y_test=self.data_dct['neural_responses'][:,y_test_inds]
+            X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=42)
+            y_train=self.data_dct['neural_responses'][:,y_train_inds]
+            y_test=self.data_dct['neural_responses'][:,y_test_inds]
 
-        return {'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
+            trials_dct[trial]={'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
+        return trials_dct
         
     def make_train_test_data(self):
         self.make_data_dct()
