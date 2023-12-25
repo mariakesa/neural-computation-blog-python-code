@@ -9,8 +9,9 @@ import os
 
 class StimPrep:
     def __init__(self):
-        self.movies_id=501704220 #This is three session A
-        self.natural_scenes_id=501559087
+        self.session_A=501704220 #This is three session A
+        self.session_B=501559087
+        self.session_C=501474098
         print(cache_path)
         self.boc = BrainObservatoryCache(manifest_file=str(
             Path(cache_path) / Path('brain_observatory_manifest.json')))
@@ -37,10 +38,22 @@ class StimPrep:
             stims=np.load(stim_path)
             return stims
         else:
-            data_set = self.boc.get_ophys_experiment_data(self.movies_id)
             if stimulus=='natural_movie_one':
+                data_set = self.boc.get_ophys_experiment_data(self.session_A)
                 movie_one = data_set.get_stimulus_template('natural_movie_one')
                 np.save(stim_path, movie_one)
+                stims=np.load(stim_path)
+                return stims
+            if stimulus=='natural_movie_two':
+                data_set = self.boc.get_ophys_experiment_data(self.session_C)
+                movie_two = data_set.get_stimulus_template('natural_movie_two')
+                np.save(stim_path, movie_two)
+                stims=np.load(stim_path)
+                return stims
+            if stimulus=='natural_movie_three':
+                data_set = self.boc.get_ophys_experiment_data(self.session_A)
+                movie_three= data_set.get_stimulus_template('natural_movie_three')
+                np.save(stim_path, movie_three)
                 stims=np.load(stim_path)
                 return stims
         #data_set = self.boc.get_ophys_experiment_data(self.reference_eid)

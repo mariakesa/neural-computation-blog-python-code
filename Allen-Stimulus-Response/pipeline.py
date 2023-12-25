@@ -47,7 +47,7 @@ class Pipeline:
                 var_exp_dino =ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['dino']][trial])
                 df[f'var_exp_clip_{trial}']=var_exp_clip
                 df[f'var_exp_dino_{trial}']=var_exp_dino
-                df.to_csv('first_q_test.csv')
+            df.to_csv('first_q_test.csv')
         #print(self.eid_dat)
 
         

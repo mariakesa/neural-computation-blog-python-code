@@ -15,6 +15,7 @@ class SingleEIDDat:
         self.dataset = boc.get_ophys_experiment_data(eid)
         self.cell_ids = self.dataset.get_cell_specimen_ids()
         print('My cell id\'s: ', self.cell_ids)
+        #print(self.dataset.)
 
     def make_data_dct(self):
         self.data_dct={}
