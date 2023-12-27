@@ -3,7 +3,7 @@ from pathlib import Path
 from config import cache_path, save_path, embeddings_dct
 import numpy as np 
 import torch
-from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProcessor, AutoModel, AutoImageProcessor
+from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProcessor, AutoModel, AutoImageProcessor, ViTMAEModel
 import os
 
 
@@ -71,7 +71,13 @@ class StimPrep:
             with torch.no_grad():
                 outputs = model(**inputs)
             #last_hidden_states = outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
-            cls=outputs.pooler_output.squeeze().detach().numpy()
+            model_class_name = type(model).__name__
+            print(model_class_name)
+            if model_class_name in ['CLIPVisionModel', 'ViTModel']:
+                cls = outputs.pooler_output.squeeze().detach().numpy()
+            elif model_class_name in ['ViTMAEModel']:
+                cls = np.mean(outputs.last_hidden_state.squeeze().detach().numpy(),axis=0)
+            print(cls.shape)
             #print(cls.shape)
             embeddings[i, :] = cls
         return embeddings
@@ -89,6 +95,13 @@ class StimPrep:
         processor = AutoProcessor.from_pretrained("openai/clip-vit-base-patch32")
         embeddings  = self.process_stims(stims, processor, model)
         return embeddings
+    
+    def make_vitmae(self, stims):
+        stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
+        processor = AutoImageProcessor.from_pretrained("facebook/vit-mae-base")
+        model = ViTMAEModel.from_pretrained("facebook/vit-mae-base")
+        embeddings  = self.process_stims(stims, processor, model)
+        return embeddings
 
     def make_embedding(self, emb_path, stim_path, model):
         #Make CLIP
@@ -102,4 +115,7 @@ class StimPrep:
                 np.save(full_path, embeddings)
             if model=='DINO':
                 embeddings = self.make_dino(stims)
+                np.save(full_path, embeddings)
+            if model=='ViTMAE':
+                embeddings = self.make_vitmae(stims)
                 np.save(full_path, embeddings)

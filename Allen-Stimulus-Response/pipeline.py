@@ -30,6 +30,13 @@ class Pipeline:
                 print(f'DINO {p} already exists!')
             else:
                 self.stim_prep.make_embedding(emb_path, raw_stim, model='DINO')
+        for i, p in enumerate(embeddings_dct['vitmae']):
+            emb_path = save_path / Path(p)
+            raw_stim = embeddings_dct['raw_stims'][i]
+            if os.path.exists(emb_path):
+                print(f'DINO {p} already exists!')
+            else:
+                self.stim_prep.make_embedding(emb_path, raw_stim, model='ViTMAE')
 
     def run_pipeline(self, eids):
         self.create_embeddings()
@@ -45,8 +52,10 @@ class Pipeline:
             for trial in range(10):
                 var_exp_clip=ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['clip']][trial])
                 var_exp_dino =ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['dino']][trial])
+                var_exp_vitmae =ridge_regression(self.eid_dat[eid][stimuli_dct['movie_one']['vitmae']][trial])
                 df[f'var_exp_clip_{trial}']=var_exp_clip
                 df[f'var_exp_dino_{trial}']=var_exp_dino
+                df[f'var_exp_vitmae_{trial}']=var_exp_vitmae
             df.to_csv('first_q_test.csv')
         #print(self.eid_dat)
 
