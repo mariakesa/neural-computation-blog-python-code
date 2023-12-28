@@ -71,15 +71,23 @@ class StimPrep:
             with torch.no_grad():
                 outputs = model(**inputs)
             #last_hidden_states = outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
-            model_class_name = type(model).__name__
-            print(model_class_name)
-            if model_class_name in ['CLIPVisionModel', 'ViTModel']:
-                cls = outputs.pooler_output.squeeze().detach().numpy()
-            elif model_class_name in ['ViTMAEModel']:
-                cls = np.mean(outputs.last_hidden_state.squeeze().detach().numpy(),axis=0)
-            print(cls.shape)
+            #model_class_name = type(model).__name__
+            #print(model_class_name)
+            cls = outputs.pooler_output.squeeze().detach().numpy()
+            #if model_class_name in ['CLIPVisionModel', 'ViTModel']:
+                #cls = outputs.pooler_output.squeeze().detach().numpy()
+            #elif model_class_name in ['ViTMAEModel']:
+                #cls = np.mean(outputs.last_hidden_state.squeeze().detach().numpy(),axis=0)
+            #print(cls.shape)
             #print(cls.shape)
             embeddings[i, :] = cls
+        return embeddings
+    
+    def make_vit(self, stims):
+        stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
+        processor = ViTImageProcessor.from_pretrained('google/vit-base-patch32-384')
+        model = ViTModel.from_pretrained('google/vit-base-patch32-384')
+        embeddings  = self.process_stims(stims, processor, model)
         return embeddings
         
     def make_dino(self, stims):
@@ -117,5 +125,9 @@ class StimPrep:
                 embeddings = self.make_dino(stims)
                 np.save(full_path, embeddings)
             if model=='ViTMAE':
-                embeddings = self.make_vitmae(stims)
+                pass
+                #embeddings = self.make_vitmae(stims)
+                #np.save(full_path, embeddings)
+            if model=='ViT':
+                embeddings=self.make_vit(stims)
                 np.save(full_path, embeddings)
