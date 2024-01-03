@@ -5,7 +5,7 @@ import os
 from allensdk.core.brain_observatory_cache import BrainObservatoryCache
 from config import cache_path, save_path
 from pathlib import Path
-from make_data import SingleEIDDat
+from make_data import SingleEIDDat, Movie3
 from regression import ridge_regression, make_visualizations
 import pandas as pd
 
@@ -48,6 +48,7 @@ class Pipeline:
     def run_pipeline(self, eids):
         self.create_embeddings()
         self.eid_dat={}
+        '''
         for eid in eids:
             dat=SingleEIDDat(eid)
             self.eid_dat[eid] = dat.make_train_test_data()
@@ -69,7 +70,10 @@ class Pipeline:
                     make_visualizations(cell_ids, self.eid_dat[eid][stimuli_dct['movie_one']['clip']][trial])
             df.to_csv('first_q_test.csv')
         #print(self.eid_dat)
-
+        '''
+        dat=Movie3(eids[0]).make_data_dct()
         
-Pipeline().run_pipeline([566752133])
+#Pipeline().run_pipeline([566752133])
+#Session A
+Pipeline().run_pipeline([501704220])
 

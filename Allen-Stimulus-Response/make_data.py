@@ -55,3 +55,28 @@ class SingleEIDDat:
             train_test_data[model] = self.make_regression_data(embedding)
         #print('Boom!', train_test_data)
         return train_test_data
+    
+class MovieBase:
+    def __init__(self, eid):
+        boc = BrainObservatoryCache(manifest_file=str(
+                Path(cache_path) / 'brain_observatory_manifest.json'))
+        
+        self.dataset = boc.get_ophys_experiment_data(eid)
+        self.cell_ids = self.dataset.get_cell_specimen_ids()
+
+    
+class Movie3(MovieBase):
+    '''
+    Movie three appears in session A.
+    It's 120 s long.
+    10 trials just like other movies. 
+    '''
+    def __init__(self, eid):
+        super().__init__(eid)
+
+    def make_data_dct(self):
+        self.data_dct={}
+        self.data_dct['movie_stim_table'] = self.dataset.get_stimulus_table(
+                    'natural_movie_three')
+
+        self.data_dct['neural_responses'] = self.dataset.get_dff_traces()[1]
