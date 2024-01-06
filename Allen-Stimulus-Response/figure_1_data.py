@@ -18,9 +18,12 @@ def make_embedding_json(movie):
     json_dct={}
     for i in range(1,my_dat.shape[0]):
         json_dct[i]=list(my_dat[i-1]-my_dat[i])
-    json_path=Path(save_path)/Path("clip_emb_test.json")
-    with open(json_path, "w") as outfile: 
-        json.dump(json_dct, outfile, indent=4)
+        plt.plot(json_dct[i])
+        plt.show()
+        print(len(json_dct[i]))
+    #json_path=Path(save_path)/Path("clip_emb_test.json")
+    #with open(json_path, "w") as outfile: 
+        #json.dump(json_dct, outfile, indent=4)
 
 
 make_embedding_json('movie_one')
