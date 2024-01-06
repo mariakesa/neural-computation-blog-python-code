@@ -4,7 +4,10 @@ from rastermap import Rastermap, utils
 from scipy.stats import zscore
 
 # spks is neurons by time
+stimulus=np.load("/media/maria/DATA/BrainObservatoryProcessedData/natural_movie_one.npy")
+print(stimulus.shape)
 spks = np.load("/media/maria/DATA/BrainObservatoryProcessedData/natural_movie_one_clip.npy").T.astype("float32")
+print(spks.shape)
 spks = zscore(spks, axis=1)
 
 # fit rastermap
@@ -17,7 +20,8 @@ isort = model.isort
 X_embedding = zscore(utils.bin1d(spks[isort], bin_size=25, axis=0), axis=1)
 
 # plot
-fig = plt.figure(figsize=(12,5))
+fig = plt.figure(figsize=(6,2))
 ax = fig.add_subplot(111)
 ax.imshow(X_embedding, vmin=0, vmax=1.5, cmap="gray_r", aspect="auto")
 plt.show()
+#np.save('/media/maria/DATA/BrainObservatoryProcessedData/test_rastermap.npy')
