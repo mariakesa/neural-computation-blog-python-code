@@ -39,6 +39,7 @@ class MakeTestTrain():
                 id = e['id']
                 exps = self.boc.get_ophys_experiments(
                     experiment_container_ids=[id])
+                print(exps)
                 for i in exps:
                     if i['session_type'] == 'three_session_B':
                         eids.append(i['id'])

@@ -1,1 +1,8 @@
-{"dino": "something-something", "movie_one_path": "/media/maria/DATA/BrainObservatoryProcessedData/movie_one.npy"}
+{
+    "raw_stims": [
+        {
+            "path": "/media/maria/DATA/BrainObservatoryProcessedData/movie_one.npy",
+            "stim_name": "movie_one"
+        }
+    ]
+}

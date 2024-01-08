@@ -71,7 +71,7 @@ class Pipeline:
             df.to_csv('first_q_test.csv')
         #print(self.eid_dat)
         '''
-        dat=Movie3(eids[0]).make_data_dct()
+        #dat=Movie3(eids[0]).make_data_dct()
         
 #Pipeline().run_pipeline([566752133])
 #Session A

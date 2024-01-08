@@ -113,7 +113,7 @@ for i in range(1, 6):
 axbig3.axvline(x=5, color='yellow', linestyle='--',linewidth=3)
 
 
-alpha=0.8
+alpha=0.53
 for i, ax in enumerate(axs[4, :]):
     print(int(i * np.floor(900/5))-1)
     if i==0:

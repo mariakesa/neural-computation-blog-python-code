@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from allensdk.core.brain_observatory_cache import BrainObservatoryCache
 import numpy as np
+from transformers import ViTImageProcessor, ViTModel
+import torch
 
 class Stimulus:
     def __init__(self):
@@ -28,10 +30,10 @@ class Stimulus:
     def write_paths_to_json(self):
         f = open('paths.json', "r")
         path_dct = json.load(f)
-        path_dct['movie_one_path']= str(Path(self.save_path) / 'movie_one.npy')
+        path_dct['raw_stims']= [{"path": str(Path(self.save_path) / 'movie_one.npy'), "stim_name": "movie_one"}]
         f.close()
         f = open('paths.json', "w")
-        json.dump(path_dct, f)
+        json.dump(path_dct, f, indent=4)
         f.close()
 
     def save_stims(self):
@@ -74,7 +76,7 @@ class Stimulus:
         '''
         #return movie_stims, scenes_stims
 
-a=Stimulus().save_stims()
+#a=Stimulus().save_stims()
 class StimulusEmbedding(ABC):
     pass
     #DINO
@@ -92,9 +94,28 @@ class StimulusEmbedding(ABC):
         f.close()
         return config['cache_path']
 
+    def read_save_path(self):
+        f = open('config.json')
+        config = json.load(f)
+        f.close()
+        return config['save_path']
+
+    def read_paths(self):
+        f = open('paths.json')
+        paths = json.load(f)
+        f.close()
+        stim_paths=paths['raw_stims']
+        return stim_paths
+
     @abstractmethod
-    def write_path_to_json(self):
+    def get_embedding(self):
         pass
+
+    @abstractmethod
+    def write_paths_to_json(self):
+        pass
+
+
 
 
 class DINOEmbedding(StimulusEmbedding):
@@ -102,22 +123,55 @@ class DINOEmbedding(StimulusEmbedding):
     def __init__(self):
         self.cache_path=self.read_cache_path()
         print(self.cache_path)
+        self.save_path=self.read_save_path()
+        self.stims_path=self.read_paths()
 
-
-    def write_path_to_json(self):
+    def write_paths_to_json(self):
         f = open('paths.json', "r")
         path_dct = json.load(f)
-        path_dct['dino']='something-something'
+        path_dct['dino_fatures']={"path":str(Path(self.save_path)/"dino_movie_one.npy"), 
+                                    "features_name":"dino_movie_one" }
         print(path_dct)
         f.close()
         f = open('paths.json', "w")
         json.dump(path_dct, f)
         f.close()
 
+    def get_embedding(self, stims):
+        '''
+        Extract dino features from stims.
+        '''
+        stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
+        processor = ViTImageProcessor.from_pretrained('facebook/dino-vitb8')
+        model = ViTModel.from_pretrained('facebook/dino-vitb8')
+
+        n_stims = len(stims)
+        dino_features = np.empty((n_stims, 768))
+        for i in range(n_stims):
+            print(i)
+            inputs = processor(images=stims[i], return_tensors="pt")
+            with torch.no_grad():
+                outputs = model(**inputs)
+            # print(outputs.keys())
+            last_hidden_states = outputs.pooler_output.squeeze(0).detach().numpy()
+            print(last_hidden_states.shape)
+            dino_features[i, :] = last_hidden_states
+
+        return dino_features
+
+    def all_embeddings(self):
+        for stim in self.stims_path:
+            stims=np.load(stim["path"])
+            dino_features=self.get_embedding(stims)
+            path_str='dino_'+stim["stim_name"]
+            np.save(str(Path(self.save_path)/path_str))
+            print(dino_features)
+        self.write_paths_to_json()
+
     
         
 
-#a=DINOEmbedding().write_path_to_json()
+a=DINOEmbedding().all_embeddings()
 
 
 
