@@ -6,15 +6,36 @@ from allensdk.core.brain_observatory_cache import BrainObservatoryCache
 from pathlib import Path
 import numpy as np
 from sklearn.model_selection import train_test_split
+import pandas as pd
 
 class ProcessMovieRecordings:
-    def __init__(self, eid, stimulus):
+    def __init__(self, container_id):
         boc = BrainObservatoryCache(manifest_file=str(
                 Path(cache_path) / 'brain_observatory_manifest.json'))
         
-        self.dataset = boc.get_ophys_experiment_data(eid)
-        self.cell_ids = self.dataset.get_cell_specimen_ids()
-        self.stimulus = stimulus
+        #self.dataset = boc.get_ophys_experiment_data(eid)
+        #self.cell_ids = self.dataset.get_cell_specimen_ids()
+        #self.stimulus = stimulus
+
+    def make_container_dict(self):
+        '''
+        Parses which experimental id's (values)
+        correspond to which experiment containers (keys).
+        '''
+        experiment_container = self.boc.get_experiment_containers()
+        container_ids=[dct['id'] for dct in experiment_container]
+        eids=self.boc.get_ophys_experiments(experiment_container_ids=container_ids)
+        df=pd.DataFrame(eids)
+        reduced_df=df[['id', 'experiment_container_id', 'session_type']]
+        grouped_df = df.groupby(['experiment_container_id', 'session_type'])['id'].agg(list).reset_index()
+        eid_dict = {}
+        for row in grouped_df.itertuples(index=False):
+            container_id, session_type, ids = row
+            if container_id not in eid_dict:
+                eid_dict[container_id] = {}
+            eid_dict[container_id][session_type] = ids[0]
+        return eid_dict
+
 
     def make_data_dct(self):
         self.data_dct={}
