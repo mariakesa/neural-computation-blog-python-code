@@ -20,6 +20,7 @@ class ProcessMovieRecordings:
         #self.cell_ids = self.dataset.get_cell_specimen_ids()
         #self.stimulus = stimulus
         self.random_state_dct=self.generate_random_state()
+        self.get_embeddings()
 
     def generate_random_state(self):
         np.random.seed(7)
@@ -102,36 +103,17 @@ class ProcessMovieRecordings:
         session_dct = {}
         for s in session_stimuli:
             movie_stim_table = dataset.get_stimulus_table(s)
+            embedding=self.embeddings[s]
             for trial in range(10):
                 random_state=self.random_state_dct[session][s][trial]
-                session_dct[str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial,random_state=)
+                session_dct[str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
         return session_dct
-
-        trials_dct={}
-        for trial in range(10):
-            np.random.seed = 7879
-            stimuli = self.data_dct['movie_stim_table'].loc[self.data_dct['movie_stim_table']['repeat'] == trial]
-            if trial==0:
-                print(stimuli)
-
-            X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=42)
-            y_train=self.data_dct['neural_responses'][:,y_train_inds]
-            y_test=self.data_dct['neural_responses'][:,y_test_inds]
-
-            trials_dct[trial]={'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
-            
-
-
-
-        #train_test_data={}
-        #for model in self.embeddings.keys():
-            #embedding = self.embeddings[model]
-            #train_test_data[model] = self.make_regression_data(embedding)
-        #print('Boom!', train_test_data)
-        #return train_test_data
-
-ProcessMovieRecordings().make_train_test_data(511510736)
-
+    
+import time
+start=time.time()
+ProcessMovieRecordings().make_regression_data(511510736)
+end=time.time()
+print(end-start)
 class SingleEIDDat:
     def __init__(self, eid):
         boc = BrainObservatoryCache(manifest_file=str(
