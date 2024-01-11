@@ -16,7 +16,14 @@ stimuli_dct = {
          'dino': 'natural_movie_one_dino.npy',
          #'vitmae': 'natural_movie_one_vitmae.npy',
          'vit': 'natural_movie_one_vit.npy'},
-    'natural_movie_two'
+    'natural_movie_two': {'clip': 'natural_movie_two_clip.npy',
+         'dino': 'natural_movie_two_dino.npy',
+         #'vitmae': 'natural_movie_one_vitmae.npy',
+         'vit': 'natural_movie_one_vit.npy'},
+    'natural_movie_three': {'clip': 'natural_movie_three_clip.npy',
+         'dino': 'natural_movie_three_dino.npy',
+         #'vitmae': 'natural_movie_one_vitmae.npy',
+         'vit': 'natural_movie_three_vit.npy'}
 }
 
 #https://huggingface.co/google/vit-base-patch32-384
