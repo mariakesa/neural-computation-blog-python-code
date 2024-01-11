@@ -1,4 +1,4 @@
-from config import cache_path, save_path, embeddings_dct, stimuli_dct
+from config import cache_path, save_path, embeddings_dct, stimuli_dct, stimulus_session_dict
 from pathlib import Path
 from make_embeddings import StimPrep
 import os
@@ -9,10 +9,11 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 
 class ProcessMovieRecordings:
-    def __init__(self, container_id):
-        boc = BrainObservatoryCache(manifest_file=str(
+    def __init__(self):
+        self.boc = BrainObservatoryCache(manifest_file=str(
                 Path(cache_path) / 'brain_observatory_manifest.json'))
         
+        self.eid_dict = self.make_container_dict()
         #self.dataset = boc.get_ophys_experiment_data(eid)
         #self.cell_ids = self.dataset.get_cell_specimen_ids()
         #self.stimulus = stimulus
@@ -37,22 +38,34 @@ class ProcessMovieRecordings:
         return eid_dict
 
 
-    def make_data_dct(self):
-        self.data_dct={}
-        self.data_dct['movie_stim_table'] = self.dataset.get_stimulus_table(self.stimulus)
-
-        self.data_dct['neural_responses'] = self.dataset.get_dff_traces()[1]
+    def make_data_dct(self, data_dct, dataset, stimulus):
+        data_dct['movie_stim_table_'+stimulus] = dataset.get_stimulus_table(stimulus)
+        return data_dct
 
 
     def get_embeddings(self):
         self.embeddings={}
         for model in stimuli_dct[self.stimulus]:
             self.embeddings[stimuli_dct[self.stimulus][model]] = np.load(Path(save_path)/Path(stimuli_dct[self.stimulus][model]))
+    
+
+    def make_train_test(self, dataset, session):
+        data_dct = {}
+        data_dct['neural_responses'] = dataset.get_dff_traces()[1]
+        stimuli = stimulus_session_dict[session]
+        for stim in stimuli:
 
 
-    def make_train_test_data(self):
-        self.make_data_dct()
+
+    def make_train_test_data(self,container_id):
         self.get_embeddings()
+        current_container_dict=self.eid_dict[container_id]
+        for session in self.current_container_dict.keys():
+            dataset = self.boc.get_ophys_experiment_data(current_container_dict[session])
+            self.make_session_var_exp_df(dataset, session)
+            
+
+
 
         #train_test_data={}
         #for model in self.embeddings.keys():
@@ -61,7 +74,7 @@ class ProcessMovieRecordings:
         #print('Boom!', train_test_data)
         #return train_test_data
 
-ProcessMovieRecordings(501704220,'natural_movie_three')
+ProcessMovieRecordings().make_train_test_data(511510736)
 
 class SingleEIDDat:
     def __init__(self, eid):
