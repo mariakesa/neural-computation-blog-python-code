@@ -8,6 +8,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import pandas as pd
 
+#rng = np.random.default_rng(77)
+
 class ProcessMovieRecordings:
     def __init__(self):
         self.boc = BrainObservatoryCache(manifest_file=str(
@@ -49,20 +51,54 @@ class ProcessMovieRecordings:
             self.embeddings[stimuli_dct[self.stimulus][model]] = np.load(Path(save_path)/Path(stimuli_dct[self.stimulus][model]))
     
 
-    def make_train_test(self, dataset, session):
-        data_dct = {}
+    def get_session_data(self, dataset, session):
+        
         data_dct['neural_responses'] = dataset.get_dff_traces()[1]
-        stimuli = stimulus_session_dict[session]
-        for stim in stimuli:
+        #stimuli = stimulus_session_dict[session]
+        #for stim in stimuli:
+        
 
 
-
-    def make_train_test_data(self,container_id):
+    def make_all_data(self,container_id):
         self.get_embeddings()
+        data_dct = {}
         current_container_dict=self.eid_dict[container_id]
         for session in self.current_container_dict.keys():
-            dataset = self.boc.get_ophys_experiment_data(current_container_dict[session])
-            self.make_session_var_exp_df(dataset, session)
+            data_dct[container_id][session] = self.make_regression_data(container_id, session)
+
+    def process_single_trial(self, movie_stim_table, dff_traces, trial, embedding):
+        stimuli = movie_stim_table.loc[self.data_dct['movie_stim_table']['repeat'] == trial]
+        X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=42)
+        y_train= dff_traces[:,y_train_inds]
+        y_test= dff_traces['neural_responses'][:,y_test_inds]
+        return {'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
+        
+
+
+    def make_regression_data(self, container_id, session):
+        session_eid  = self.current_container_dict[container_id][session]
+        dataset = self.boc.get_ophys_experiment_data(session_eid)
+        dff_traces = dataset.get_dff_traces()[1]
+        session_stimuli = stimulus_session_dict[session]
+        session_dct = {}
+        for s in session_stimuli:
+            movie_stim_table = dataset.get_stimulus_table(s)
+            for trial in range(10):
+                session_dct[str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial)
+        return session_dct
+
+        trials_dct={}
+        for trial in range(10):
+            np.random.seed = 7879
+            stimuli = self.data_dct['movie_stim_table'].loc[self.data_dct['movie_stim_table']['repeat'] == trial]
+            if trial==0:
+                print(stimuli)
+
+            X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=42)
+            y_train=self.data_dct['neural_responses'][:,y_train_inds]
+            y_test=self.data_dct['neural_responses'][:,y_test_inds]
+
+            trials_dct[trial]={'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
             
 
 
