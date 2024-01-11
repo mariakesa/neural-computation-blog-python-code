@@ -15,7 +15,8 @@ stimuli_dct = {
     'natural_movie_one': {'clip': 'natural_movie_one_clip.npy',
          'dino': 'natural_movie_one_dino.npy',
          #'vitmae': 'natural_movie_one_vitmae.npy',
-         'vit': 'natural_movie_one_vit.npy'}
+         'vit': 'natural_movie_one_vit.npy'},
+    'natural_movie_two'
 }
 
 #https://huggingface.co/google/vit-base-patch32-384
@@ -23,6 +24,6 @@ stimuli_dct = {
 stimulus_session_dict= {
     'three_session_A': ['natural_movie_one', 'natural_movie_three'],
     'three_session_B': ['natural_movie_one'],
-    'three_session_C': ['natural_movie_one', 'natural_movie_three'],
-    'three_session_C2': ['natural_movie_one', 'natural_movie_three']
+    'three_session_C': ['natural_movie_one', 'natural_movie_two'],
+    'three_session_C2': ['natural_movie_one', 'natural_movie_two']
 }

@@ -19,6 +19,33 @@ class ProcessMovieRecordings:
         #self.dataset = boc.get_ophys_experiment_data(eid)
         #self.cell_ids = self.dataset.get_cell_specimen_ids()
         #self.stimulus = stimulus
+        self.random_state_dct=self.generate_random_state()
+
+    def generate_random_state(self):
+        np.random.seed(7)
+
+        # Function to generate a random integer
+        def generate_random_integer():
+            return np.random.randint(1, 101)  # Generates a random integer between 1 and 100 (inclusive)
+
+        # Given stimulus_session_dict
+        stimulus_session_dict = {
+            'three_session_A': ['natural_movie_one', 'natural_movie_three'],
+            'three_session_B': ['natural_movie_one'],
+            'three_session_C': ['natural_movie_one', 'natural_movie_three'],
+            'three_session_C2': ['natural_movie_one', 'natural_movie_three']
+        }
+
+        # Create the main dictionary
+        random_state_dct = {}
+
+        # Populate the dictionary using stimulus_session_dict
+        for session, stimuli_list in stimulus_session_dict.items():
+            session_dict = {}
+            for stimulus in stimuli_list:
+                nested_dict = {trial: generate_random_integer() for trial in range(10)}
+                session_dict[stimulus] = nested_dict
+            random_state_dct[session] = session_dict
 
     def make_container_dict(self):
         '''
@@ -48,15 +75,7 @@ class ProcessMovieRecordings:
     def get_embeddings(self):
         self.embeddings={}
         for model in stimuli_dct[self.stimulus]:
-            self.embeddings[stimuli_dct[self.stimulus][model]] = np.load(Path(save_path)/Path(stimuli_dct[self.stimulus][model]))
-    
-
-    def get_session_data(self, dataset, session):
-        
-        data_dct['neural_responses'] = dataset.get_dff_traces()[1]
-        #stimuli = stimulus_session_dict[session]
-        #for stim in stimuli:
-        
+            self.embeddings[stimuli_dct[self.stimulus][model]] = np.load(Path(save_path)/Path(stimuli_dct[self.stimulus][model]))        
 
 
     def make_all_data(self,container_id):
@@ -84,7 +103,7 @@ class ProcessMovieRecordings:
         for s in session_stimuli:
             movie_stim_table = dataset.get_stimulus_table(s)
             for trial in range(10):
-                random_state=random_state_dct[s][trial]
+                random_state=self.random_state_dct[session][s][trial]
                 session_dct[str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial,random_state=)
         return session_dct
 
