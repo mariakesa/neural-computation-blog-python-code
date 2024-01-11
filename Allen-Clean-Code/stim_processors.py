@@ -1,4 +1,4 @@
-from config import cache_path, save_path, embeddings_dct, stimuli_dct, stimulus_session_dict
+from config import cache_path, save_path, embeddings_dct, stimuli_dct, stimulus_session_dict, random_state_dct
 from pathlib import Path
 from make_embeddings import StimPrep
 import os
@@ -66,9 +66,9 @@ class ProcessMovieRecordings:
         for session in self.current_container_dict.keys():
             data_dct[container_id][session] = self.make_regression_data(container_id, session)
 
-    def process_single_trial(self, movie_stim_table, dff_traces, trial, embedding):
-        stimuli = movie_stim_table.loc[self.data_dct['movie_stim_table']['repeat'] == trial]
-        X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=42)
+    def process_single_trial(self, movie_stim_table, dff_traces, trial, embedding, random_state):
+        stimuli = movie_stim_table.loc[movie_stim_table['repeat'] == trial]
+        X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=random_state)
         y_train= dff_traces[:,y_train_inds]
         y_test= dff_traces['neural_responses'][:,y_test_inds]
         return {'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
@@ -84,7 +84,8 @@ class ProcessMovieRecordings:
         for s in session_stimuli:
             movie_stim_table = dataset.get_stimulus_table(s)
             for trial in range(10):
-                session_dct[str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial)
+                random_state=random_state_dct[s][trial]
+                session_dct[str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial,random_state=)
         return session_dct
 
         trials_dct={}
