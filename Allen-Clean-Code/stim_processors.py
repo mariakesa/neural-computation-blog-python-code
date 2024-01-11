@@ -1,6 +1,6 @@
-from config import cache_path, save_path, embeddings_dct, stimuli_dct, stimulus_session_dict, random_state_dct
+from config import cache_path, save_path, embeddings_dct, stimuli_dct, stimulus_session_dict
 from pathlib import Path
-from make_embeddings import StimPrep
+#from make_embeddings import StimPrep
 import os
 from allensdk.core.brain_observatory_cache import BrainObservatoryCache
 from pathlib import Path
@@ -20,7 +20,7 @@ class ProcessMovieRecordings:
         #self.cell_ids = self.dataset.get_cell_specimen_ids()
         #self.stimulus = stimulus
         self.random_state_dct=self.generate_random_state()
-        self.get_embeddings()
+        self.embeddings = self.get_embeddings()
 
     def generate_random_state(self):
         np.random.seed(7)
@@ -47,6 +47,7 @@ class ProcessMovieRecordings:
                 nested_dict = {trial: generate_random_integer() for trial in range(10)}
                 session_dict[stimulus] = nested_dict
             random_state_dct[session] = session_dict
+        return random_state_dct
 
     def make_container_dict(self):
         '''
@@ -74,92 +75,38 @@ class ProcessMovieRecordings:
 
 
     def get_embeddings(self):
-        self.embeddings={}
-        for model in stimuli_dct[self.stimulus]:
-            self.embeddings[stimuli_dct[self.stimulus][model]] = np.load(Path(save_path)/Path(stimuli_dct[self.stimulus][model]))        
-
-
-    def make_all_data(self,container_id):
-        self.get_embeddings()
-        data_dct = {}
-        current_container_dict=self.eid_dict[container_id]
-        for session in self.current_container_dict.keys():
-            data_dct[container_id][session] = self.make_regression_data(container_id, session)
+        embeddings={}
+        for s in stimuli_dct.keys():
+            for model in stimuli_dct[s]:
+                embeddings[stimuli_dct[s][model]] = np.load(Path(save_path)/Path(stimuli_dct[s][model]))  
+        return embeddings    
 
     def process_single_trial(self, movie_stim_table, dff_traces, trial, embedding, random_state):
         stimuli = movie_stim_table.loc[movie_stim_table['repeat'] == trial]
         X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=random_state)
         y_train= dff_traces[:,y_train_inds]
-        y_test= dff_traces['neural_responses'][:,y_test_inds]
+        y_test= dff_traces[:,y_test_inds]
         return {'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
         
 
 
     def make_regression_data(self, container_id, session):
-        session_eid  = self.current_container_dict[container_id][session]
+        session_eid  = self.eid_dict[container_id][session]
         dataset = self.boc.get_ophys_experiment_data(session_eid)
         dff_traces = dataset.get_dff_traces()[1]
         session_stimuli = stimulus_session_dict[session]
         session_dct = {}
         for s in session_stimuli:
-            movie_stim_table = dataset.get_stimulus_table(s)
-            embedding=self.embeddings[s]
-            for trial in range(10):
-                random_state=self.random_state_dct[session][s][trial]
-                session_dct[str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
+            for m in stimuli_dct[s].keys():
+                movie_stim_table = dataset.get_stimulus_table(s)
+                embedding=self.embeddings[stimuli_dct[s][m]]
+                for trial in range(10):
+                    random_state=self.random_state_dct[session][s][trial]
+                    session_dct[str(m)+'_'+str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
         return session_dct
     
 import time
 start=time.time()
-ProcessMovieRecordings().make_regression_data(511510736)
+ProcessMovieRecordings().make_regression_data(511510736, 'three_session_A')
 end=time.time()
 print(end-start)
-class SingleEIDDat:
-    def __init__(self, eid):
-        boc = BrainObservatoryCache(manifest_file=str(
-                Path(cache_path) / 'brain_observatory_manifest.json'))
-        
-        self.dataset = boc.get_ophys_experiment_data(eid)
-        self.cell_ids = self.dataset.get_cell_specimen_ids()
-        print('My cell id\'s: ', self.cell_ids)
-        #print(self.dataset.)
-
-    def make_data_dct(self):
-        self.data_dct={}
-        self.data_dct['movie_stim_table'] = self.dataset.get_stimulus_table(
-                    'natural_movie_one')
-
-        self.data_dct['neural_responses'] = self.dataset.get_dff_traces()[1]
-
-    def get_embeddings(self):
-        self.embeddings={}
-        for stimulus in stimuli_dct.keys():
-            print(stimuli_dct[stimulus].keys())
-            for model in stimuli_dct[stimulus].keys():
-                self.embeddings[stimuli_dct[stimulus][model]] = np.load(Path(save_path)/Path(stimuli_dct[stimulus][model]))
-
-    def make_regression_data(self, embedding):
-        trials_dct={}
-        for trial in range(10):
-            np.random.seed = 7879
-            stimuli = self.data_dct['movie_stim_table'].loc[self.data_dct['movie_stim_table']['repeat'] == trial]
-            if trial==0:
-                print(stimuli)
-
-            X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=42)
-            y_train=self.data_dct['neural_responses'][:,y_train_inds]
-            y_test=self.data_dct['neural_responses'][:,y_test_inds]
-
-            trials_dct[trial]={'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
-        return trials_dct
-        
-    def make_train_test_data(self):
-        self.make_data_dct()
-        self.get_embeddings()
-        train_test_data={}
-        for model in self.embeddings.keys():
-            embedding = self.embeddings[model]
-            train_test_data[model] = self.make_regression_data(embedding)
-        #print('Boom!', train_test_data)
-        return train_test_data
-    
