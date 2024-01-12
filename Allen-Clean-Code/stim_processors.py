@@ -107,6 +107,25 @@ class ProcessMovieRecordings:
     
 import time
 start=time.time()
-ProcessMovieRecordings().make_regression_data(511510736, 'three_session_A')
+a=ProcessMovieRecordings().make_regression_data(511510736, 'three_session_A')
 end=time.time()
 print(end-start)
+#print(a.keys())
+
+def pull_data():
+    output_dir = '/media/maria/DATA/AllenData'
+    boc = BrainObservatoryCache(manifest_file=str(Path(output_dir) / 'brain_observatory_manifest.json'))
+    experiment_container = boc.get_experiment_containers()
+    rng = np.random.default_rng(78)
+    exp_ids=[dct['id'] for dct in experiment_container]
+    random_exp_ids = rng.choice(exp_ids, size=100, replace=False)
+    sessions=['trhee_session_A', 'three_session_B', 'three_session_C', 'three_session_C2']
+    processor=ProcessMovieRecordings()
+    for container_id in random_exp_ids:
+        for s in sessions:
+            processor.make_regression_data(container_id, s)
+
+start=time.time()
+pull_data()
+end=time.time()
+print('100 pulls time: ', end-start)
