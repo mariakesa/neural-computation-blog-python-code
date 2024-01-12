@@ -126,10 +126,7 @@ def pull_data():
         print(cnt)
         for s in sessions:
             try:
-                if s == 'three_session_C' or s == 'three_session_C2':
-                    processor.make_regression_data(container_id, s)
-                else:
-                    processor.make_regression_data(container_id, s)
+                processor.make_regression_data(container_id, s)
             except Exception as e:
                 print(f"Error processing container {container_id}, session {s}: {e}")
                 continue
