@@ -119,11 +119,22 @@ def pull_data():
     rng = np.random.default_rng(78)
     exp_ids=[dct['id'] for dct in experiment_container]
     random_exp_ids = rng.choice(exp_ids, size=100, replace=False)
-    sessions=['trhee_session_A', 'three_session_B', 'three_session_C', 'three_session_C2']
+    sessions=['three_session_A', 'three_session_B', 'three_session_C', 'three_session_C2']
     processor=ProcessMovieRecordings()
+    cnt=0
     for container_id in random_exp_ids:
+        print(cnt)
         for s in sessions:
-            processor.make_regression_data(container_id, s)
+            try:
+                if s == 'three_session_C' or s == 'three_session_C2':
+                    processor.make_regression_data(container_id, s)
+                else:
+                    processor.make_regression_data(container_id, s)
+            except Exception as e:
+                print(f"Error processing container {container_id}, session {s}: {e}")
+                continue
+        cnt+=1
+
 
 start=time.time()
 pull_data()
