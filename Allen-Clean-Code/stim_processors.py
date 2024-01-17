@@ -101,7 +101,8 @@ class ProcessMovieRecordings:
                 embedding=self.embeddings[stimuli_dct[s][m]]
                 for trial in range(10):
                     random_state=self.random_state_dct[session][s][trial]
-                    session_dct[str(m)+'_'+str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
+                    #Code: session-->model-->stimulus-->trial
+                    session_dct[str(sess)+'_'+str(m)+'_'+str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
         return session_dct
     
 import time
