@@ -89,6 +89,12 @@ class ProcessMovieRecordings:
         dff_traces = dataset.get_dff_traces()[1]
         session_stimuli = stimulus_session_dict[session]
         session_dct = {}
+        #Compile the sessions into the same column to avoind NAN's
+        #and make the data processing a bit easier
+        if session=='three_session_C2':
+            sess='three_session_C'
+        else:
+            sess=session
         for s in session_stimuli:
             for m in stimuli_dct[s].keys():
                 movie_stim_table = dataset.get_stimulus_table(s)
