@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import traceback
 
 #rng = np.random.default_rng(77)
 
@@ -28,14 +29,6 @@ class ProcessMovieRecordings:
         # Function to generate a random integer
         def generate_random_integer():
             return np.random.randint(1, 101)  # Generates a random integer between 1 and 100 (inclusive)
-
-        # Given stimulus_session_dict
-        stimulus_session_dict = {
-            'three_session_A': ['natural_movie_one', 'natural_movie_three'],
-            'three_session_B': ['natural_movie_one'],
-            'three_session_C': ['natural_movie_one', 'natural_movie_three'],
-            'three_session_C2': ['natural_movie_one', 'natural_movie_three']
-        }
 
         # Create the main dictionary
         random_state_dct = {}
@@ -132,8 +125,54 @@ def pull_data():
                 continue
         cnt+=1
 
+def pull_data():
+    output_dir = '/media/maria/DATA/AllenData'
+    boc = BrainObservatoryCache(manifest_file=str(Path(output_dir) / 'brain_observatory_manifest.json'))
+    experiment_container = boc.get_experiment_containers()
+    rng = np.random.default_rng(78)
+    exp_ids=[dct['id'] for dct in experiment_container]
+    random_exp_ids = rng.choice(exp_ids, size=100, replace=False)
+    sessions=['three_session_A', 'three_session_B', 'three_session_C', 'three_session_C2']
+    processor=ProcessMovieRecordings()
+    cnt=0
+    for container_id in random_exp_ids:
+        print(cnt)
+        for s in sessions:
+            try:
+                processor.make_regression_data(container_id, s)
+            except Exception as e:
+                print(f"Error processing container {container_id}, session {s}: {e}")
+                continue
+        cnt+=1
+
+def make_df():
+    output_dir = '/media/maria/DATA/AllenData'
+    boc = BrainObservatoryCache(manifest_file=str(Path(output_dir) / 'brain_observatory_manifest.json'))
+    experiment_container = boc.get_experiment_containers()
+    rng = np.random.default_rng(78)
+    exp_ids=[dct['id'] for dct in experiment_container]
+    random_exp_ids = rng.choice(exp_ids, size=100, replace=False)
+    sessions=['three_session_A', 'three_session_B', 'three_session_C', 'three_session_C2']
+    processor=ProcessMovieRecordings()
+    cnt=0
+    for container_id in random_exp_ids:
+        print(cnt)
+        for s in sessions:
+            try:
+                processor.make_regression_data(container_id, s)
+            except Exception as e:
+                print(f"Error processing container {container_id}, session {s}: {e}")
+                #traceback.print_exc()
+                continue
+        cnt+=1
+
+
+#start=time.time()
+#pull_data()
+#end=time.time()
+#print('100 pulls time: ', end-start)
 
 start=time.time()
-pull_data()
+make_df()
 end=time.time()
 print('100 pulls time: ', end-start)
