@@ -9,6 +9,30 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import traceback
 
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
+from scipy.linalg import null_space
+import numpy as np
+import json
+
+def ridge_regression(dat_dct):
+
+    y_train, y_test, X_train, X_test= dat_dct['y_train'], dat_dct['y_test'], dat_dct['X_train'], dat_dct['X_test']
+
+    regr=Ridge(10)
+
+    # Fit the model with scaled training features and target variable
+    regr.fit(X_train, y_train.T)
+
+    # Make predictions on scaled test features
+    predictions = regr.predict(X_test)
+
+    scores=[]
+    for i in range(0,y_test.shape[0]):
+        scores.append(r2_score(y_test.T[:,i], predictions[:,i]))
+    return scores
+
 #rng = np.random.default_rng(77)
 
 class ProcessMovieRecordings:
@@ -86,9 +110,11 @@ class ProcessMovieRecordings:
     def make_regression_data(self, container_id, session):
         session_eid  = self.eid_dict[container_id][session]
         dataset = self.boc.get_ophys_experiment_data(session_eid)
+        cell_ids = dataset.get_cell_specimen_ids()
         dff_traces = dataset.get_dff_traces()[1]
         session_stimuli = stimulus_session_dict[session]
-        session_dct = {}
+        session_dct = pd.DataFrame()
+        session_dct['cell_ids'] = cell_ids
         #Compile the sessions into the same column to avoind NAN's
         #and make the data processing a bit easier
         if session=='three_session_C2':
@@ -101,8 +127,9 @@ class ProcessMovieRecordings:
                 embedding=self.embeddings[stimuli_dct[s][m]]
                 for trial in range(10):
                     random_state=self.random_state_dct[session][s][trial]
+                    data=self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
                     #Code: session-->model-->stimulus-->trial
-                    session_dct[str(sess)+'_'+str(m)+'_'+str(s)+'_'+str(trial)] = self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
+                    session_dct[str(sess)+'_'+str(m)+'_'+str(s)+'_'+str(trial)] = ridge_regression(data)
         return session_dct
     
 import time
@@ -153,25 +180,48 @@ def pull_data():
         cnt+=1
 
 def make_df():
+    def compile_dfs(sess_dct):
+        # Initialize an empty DataFrame to store the merged result
+        merged_df = pd.DataFrame()
+
+        # Iterate through each key in sess_dct
+        for k in sess_dct.keys():
+            # Retrieve the DataFrame associated with the key
+            df = sess_dct[k]
+
+            # Check if merged_df is empty (first iteration)
+            if merged_df.empty:
+                merged_df = df
+            else:
+                # Merge the current DataFrame with the existing merged_df based on 'cell_ids' column
+                merged_df = pd.merge(merged_df, df, on='cell_ids', how='inner')
+
+        return merged_df
+            
     output_dir = '/media/maria/DATA/AllenData'
     boc = BrainObservatoryCache(manifest_file=str(Path(output_dir) / 'brain_observatory_manifest.json'))
     experiment_container = boc.get_experiment_containers()
     rng = np.random.default_rng(78)
     exp_ids=[dct['id'] for dct in experiment_container]
     random_exp_ids = rng.choice(exp_ids, size=100, replace=False)
+    random_exp_ids = [511510736]
     sessions=['three_session_A', 'three_session_B', 'three_session_C', 'three_session_C2']
     processor=ProcessMovieRecordings()
+    sess_dct={}
     cnt=0
     for container_id in random_exp_ids:
         print(cnt)
         for s in sessions:
             try:
-                processor.make_regression_data(container_id, s)
+                df=processor.make_regression_data(container_id, s)
+                sess_dct[s]=df
             except Exception as e:
                 print(f"Error processing container {container_id}, session {s}: {e}")
                 #traceback.print_exc()
                 continue
         cnt+=1
+    results=compile_dfs(sess_dct)
+    results.to_csv('test.csv')
 
 
 #start=time.time()
