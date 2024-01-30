@@ -6,7 +6,7 @@ import torch
 from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProcessor, AutoModel, AutoImageProcessor, ViTMAEModel, ViTForImageClassification
 import os
 from config import cache_path, save_path, embeddings_dct, stimuli_dct
-
+import matplotlib.pyplot as plt
 
 class StimPrep:
     def __init__(self):
@@ -63,9 +63,10 @@ class StimPrep:
         #self.movie_three = data_set.get_stimulus_template('natural_movie_three')
         #self.natural_scenes = data_set.get_stimulus_template('natural_scenes')
 
-    def process_stims(self, stims, processor, model):
+    def process_stims(self, raw_stims, stims, processor, model):
         n_stims = len(stims)
         embeddings = np.empty((n_stims, 768))
+        lst=[]
         for i in range(n_stims):
             print(i)
             inputs = processor(images=stims[i], return_tensors="pt")
@@ -74,12 +75,22 @@ class StimPrep:
 
             predicted_label = logits.argmax(-1).item()
             print(model.config.id2label[predicted_label])
+            lst.append(model.config.id2label[predicted_label])
+            plt.imshow(raw_stims[i],cmap='gray')
+            plt.title(model.config.id2label[predicted_label],color='orange')
+            plt.axis('off')
+            plt.show()
+        return lst
+            
+
+
     
     def make_vit(self, stims):
+        raw_stims=stims.copy()
         stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
         processor = ViTImageProcessor.from_pretrained('google/vit-base-patch32-384')
         model = ViTForImageClassification.from_pretrained('google/vit-base-patch32-384')
-        embeddings  = self.process_stims(stims, processor, model)
+        embeddings  = self.process_stims(raw_stims, stims, processor, model)
         return embeddings
         
     def make_dino(self, stims):
