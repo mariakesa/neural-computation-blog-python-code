@@ -14,7 +14,8 @@ from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
 from scipy.linalg import null_space
 import numpy as np
-import json
+import json, codecs
+
 
 def ridge_regression(dat_dct):
 
@@ -31,7 +32,7 @@ def ridge_regression(dat_dct):
     scores=[]
     for i in range(0,y_test.shape[0]):
         scores.append(r2_score(y_test.T[:,i], predictions[:,i]))
-    return scores
+    return scores, regr.coef_.tolist()
 
 #rng = np.random.default_rng(77)
 
@@ -114,7 +115,9 @@ class ProcessMovieRecordings:
         dff_traces = dataset.get_dff_traces()[1]
         session_stimuli = stimulus_session_dict[session]
         session_dct = pd.DataFrame()
+        regression_vec_dct={}
         session_dct['cell_ids'] = cell_ids
+        #regression_vec_dct['cell_ids'] = cell_ids
         #Compile the sessions into the same column to avoind NAN's
         #and make the data processing a bit easier
         if session=='three_session_C2':
@@ -129,8 +132,10 @@ class ProcessMovieRecordings:
                     random_state=self.random_state_dct[session][s][trial]
                     data=self.process_single_trial(movie_stim_table, dff_traces, trial, embedding, random_state=random_state)
                     #Code: session-->model-->stimulus-->trial
-                    session_dct[str(sess)+'_'+str(m)+'_'+str(s)+'_'+str(trial)] = ridge_regression(data)
-        return session_dct
+                    var_exps,regr_vecs=ridge_regression(data)
+                    session_dct[str(sess)+'_'+str(m)+'_'+str(s)+'_'+str(trial)] = var_exps
+                    regression_vec_dct[str(sess)+'_'+str(m)+'_'+str(s)+'_'+str(trial)]=regr_vecs
+        return session_dct, regression_vec_dct
     
 import time
 start=time.time()
@@ -209,19 +214,27 @@ def make_df():
     processor=ProcessMovieRecordings()
     sess_dct={}
     cnt=0
+    regr_vec_dct={}
     for container_id in random_exp_ids:
         print(cnt)
         for s in sessions:
             try:
-                df=processor.make_regression_data(container_id, s)
+                df, regr_vec_df=processor.make_regression_data(container_id, s)
                 sess_dct[s]=df
+                regr_vec_dct[s]=regr_vec_df
             except Exception as e:
                 print(f"Error processing container {container_id}, session {s}: {e}")
                 #traceback.print_exc()
                 continue
         cnt+=1
     results=compile_dfs(sess_dct)
-    results.to_csv('test.csv')
+    #regr_dims=compile_dfs(regr_vec_dct)
+    #results.to_csv('test.csv')
+    #regr_vec_dct.to_json('regr_dims.json')
+    json.dump(regr_vec_dct, codecs.open("regr_dims_test.json", 'w', encoding='utf-8'), 
+          separators=(',', ':'), 
+          sort_keys=True, 
+          indent=4)
 
 
 #start=time.time()
