@@ -7,6 +7,7 @@ from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProce
 import os
 from config import cache_path, save_path, embeddings_dct, stimuli_dct
 import matplotlib.pyplot as plt
+import pandas as pd
 
 class StimPrep:
     def __init__(self):
@@ -67,6 +68,7 @@ class StimPrep:
         n_stims = len(stims)
         embeddings = np.empty((n_stims, 768))
         lst=[]
+        '''
         for i in range(n_stims):
             print(i)
             inputs = processor(images=stims[i], return_tensors="pt")
@@ -80,6 +82,14 @@ class StimPrep:
             #plt.title(model.config.id2label[predicted_label],color='orange')
             #plt.axis('off')
             #plt.show()
+        '''
+        df=model.config.id2label
+        print(df)
+        import json
+        json_file_path='classification_key.json'
+        with open(json_file_path, 'w') as json_file:
+            json.dump(df, json_file)
+
         return lst
             
 
@@ -88,16 +98,17 @@ class StimPrep:
     def make_vit(self, stims):
         raw_stims=stims.copy()
         stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
-        #processor = ViTImageProcessor.from_pretrained('google/vit-base-patch32-384')
-        #model = ViTForImageClassification.from_pretrained('google/vit-base-patch32-384')
-        processor=ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
-        model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
+        processor = ViTImageProcessor.from_pretrained('google/vit-base-patch32-384')
+        model = ViTForImageClassification.from_pretrained('google/vit-base-patch32-384')
+        #processor=ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
+        #model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
         print(model)
-        #embeddings  = self.process_stims(raw_stims, stims, processor, model)
+        embeddings  = self.process_stims(raw_stims, stims, processor, model)
         final_layer_weights = model.classifier.weight.detach().cpu().numpy()
         print(final_layer_weights.shape)
         print(final_layer_weights)
         #return embeddings
+        return final_layer_weights
         
     def make_dino(self, stims):
         stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
@@ -137,11 +148,16 @@ class StimPrep:
                 #pass
                 #embeddings = self.make_vitmae(stims)
                 #np.save(full_path, embeddings)
-        self.make_vit(stims)
+        weights=self.make_vit(stims)
+        return weights
 
 stim_prep=StimPrep()
 
+
 for i, p in enumerate(embeddings_dct['vit']):
-    emb_path = save_path / Path(p)
-    raw_stim = embeddings_dct['raw_stims'][i]
-    stim_prep.make_embedding(raw_stim)
+    if i==0:
+        emb_path = save_path / Path(p)
+        raw_stim = embeddings_dct['raw_stims'][i]
+        weights=stim_prep.make_embedding(raw_stim)
+        np.save('weights.npy', weights)
+

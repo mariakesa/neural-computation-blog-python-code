@@ -231,10 +231,12 @@ def make_df():
     #regr_dims=compile_dfs(regr_vec_dct)
     #results.to_csv('test.csv')
     #regr_vec_dct.to_json('regr_dims.json')
+    #https://stackoverflow.com/questions/26646362/numpy-array-is-not-json-serializable
     json.dump(regr_vec_dct, codecs.open("regr_dims_test.json", 'w', encoding='utf-8'), 
           separators=(',', ':'), 
           sort_keys=True, 
           indent=4)
+    
 
 
 #start=time.time()
