@@ -26,12 +26,14 @@ def make_rastermap(spks):
     X_embedding = zscore(utils.bin1d(spks[isort], bin_size=25, axis=0), axis=1)
     return X_embedding, srtd
 
+
 # Comment out the following lines to avoid overwriting the variables before plotting
-#emb_clip, srtd_clip = make_rastermap(spks_clip)
+emb_clip, srtd_clip = make_rastermap(spks_clip)
 #emb_dino, srtd_dino = make_rastermap(spks_dino)
 #emb_vit, srtd_vit = make_rastermap(spks_vit)
 
 #np.save('emb_clip.npy', emb_clip)
+np.save('emb_clip.npy', srtd_clip)
 #np.save('emb_dino.npy', emb_dino)
 #np.save('emb_vit.npy', emb_vit)
 
@@ -39,6 +41,7 @@ def make_rastermap(spks):
 #np.save('srtd_dino.npy', srtd_dino)
 #np.save('srtd_vit.npy', srtd_vit)
 
+'''
 # Load saved variables
 emb_clip = np.load('emb_clip.npy')
 emb_dino = np.load('emb_dino.npy')
@@ -150,3 +153,4 @@ fig.suptitle("Rastermap visualizations of CLIP (top), DINO (middle) and ViT (bot
 fig.tight_layout()
 plt.subplots_adjust(bottom=0)
 plt.show()
+'''

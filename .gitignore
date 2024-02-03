@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 *.npy
 /Allen-Stimulus-Response/__pycache__
+*.csv
+*.json
