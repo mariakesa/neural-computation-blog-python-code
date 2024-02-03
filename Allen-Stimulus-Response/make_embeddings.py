@@ -3,7 +3,7 @@ from pathlib import Path
 from config import cache_path, save_path, embeddings_dct
 import numpy as np 
 import torch
-from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProcessor, AutoModel, AutoImageProcessor, ViTMAEModel
+from transformers import CLIPVisionModel, ViTImageProcessor, ViTModel, AutoProcessor, AutoModel, AutoImageProcessor, ViTMAEModel, ResNetModel
 import os
 
 
@@ -108,6 +108,13 @@ class StimPrep:
         stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
         processor = AutoImageProcessor.from_pretrained("facebook/vit-mae-base")
         model = ViTMAEModel.from_pretrained("facebook/vit-mae-base")
+        embeddings  = self.process_stims(stims, processor, model)
+        return embeddings
+    
+    def make_resnet(self, stims):
+        stims = np.repeat(stims[:, np.newaxis, :, :], 3, axis=1)
+        processor = AutoImageProcessor.from_pretrained("microsoft/resnet-50")
+        model = ResNetModel.from_pretrained("microsoft/resnet-50")
         embeddings  = self.process_stims(stims, processor, model)
         return embeddings
 

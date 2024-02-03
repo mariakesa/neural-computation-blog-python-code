@@ -8,22 +8,26 @@ embeddings_dct = {
     'clip': ['natural_movie_one_clip.npy', 'natural_movie_two_clip.npy', 'natural_movie_three_clip.npy'],#, 'natural_natural_scenes_clip.npy']
     'dino': ['natural_movie_one_dino.npy', 'natural_movie_two_dino.npy', 'natural_movie_three_dino.npy'],# 'natural_natural_scenes_dino.npy']
     #'vitmae': ['natural_movie_one_vitmae.npy', 'natural_movie_two_vitmae.npy', 'natural_movie_three_vitmae.npy'],
-    'vit': ['natural_movie_one_vit.npy', 'natural_movie_two_vit.npy', 'natural_movie_three_vit.npy']
+    'vit': ['natural_movie_one_vit.npy', 'natural_movie_two_vit.npy', 'natural_movie_three_vit.npy'],
+    'resnet': ['natural_movie_one_resnet.npy', 'natural_movie_two_resnet.npy', 'natural_movie_three_resnet.npy']
 }
 
 stimuli_dct = {
     'natural_movie_one': {'clip': 'natural_movie_one_clip.npy',
          'dino': 'natural_movie_one_dino.npy',
          #'vitmae': 'natural_movie_one_vitmae.npy',
-         'vit': 'natural_movie_one_vit.npy'},
+         'vit': 'natural_movie_one_vit.npy',
+         'resnet': 'natural_movie_one_resnet.npy'},
     'natural_movie_two': {'clip': 'natural_movie_two_clip.npy',
          'dino': 'natural_movie_two_dino.npy',
          #'vitmae': 'natural_movie_one_vitmae.npy',
-         'vit': 'natural_movie_one_vit.npy'},
+         'vit': 'natural_movie_one_vit.npy',
+         'resnet': 'natural_movie_two_resnet.npy'},
     'natural_movie_three': {'clip': 'natural_movie_three_clip.npy',
          'dino': 'natural_movie_three_dino.npy',
          #'vitmae': 'natural_movie_one_vitmae.npy',
-         'vit': 'natural_movie_three_vit.npy'}
+         'vit': 'natural_movie_three_vit.npy',
+         'resnet': 'natural_movie_three_resnet.npy'}
 }
 
 #https://huggingface.co/google/vit-base-patch32-384

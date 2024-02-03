@@ -44,6 +44,13 @@ class Pipeline:
                 print(f'ViT {p} already exists!')
             else:
                 self.stim_prep.make_embedding(emb_path, raw_stim, model='ViT')
+        for i, p in enumerate(embeddings_dct['resnet']):
+            emb_path = save_path / Path(p)
+            raw_stim = embeddings_dct['raw_stims'][i]
+            if os.path.exists(emb_path):
+                print(f'ResNet {p} already exists!')
+            else:
+                self.stim_prep.make_embedding(emb_path, raw_stim, model='ViT')
 
     def run_pipeline(self, eids):
         self.create_embeddings()
