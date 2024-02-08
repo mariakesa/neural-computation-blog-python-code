@@ -162,3 +162,4 @@ cython_debug/
 /Allen-Stimulus-Response/__pycache__
 *.csv
 *.json
+*.gif

@@ -138,6 +138,7 @@ class StimPrep:
             #print(f'{full_path} already exists!')
         #else:
         stims=self.load_data(stim_path)
+        print('stims shape', stims.shape)
             #if model=='CLIP':
                 #embeddings = self.make_clip(stims)
                 #np.save(full_path, embeddings)
@@ -159,5 +160,5 @@ for i, p in enumerate(embeddings_dct['vit']):
         emb_path = save_path / Path(p)
         raw_stim = embeddings_dct['raw_stims'][i]
         weights=stim_prep.make_embedding(raw_stim)
-        np.save('weights.npy', weights)
+        #np.save('weights.npy', weights)
 
