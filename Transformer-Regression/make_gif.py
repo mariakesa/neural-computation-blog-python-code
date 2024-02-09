@@ -14,10 +14,17 @@ def prepare_imgs():
         container.append(im)
     container = np.array(container)
     imgs = np.transpose(container, (2, 0, 1))
-    return container
+        # Set the seed for reproducibility
+    np.random.seed(141)
+
+    # Sample 200 random integers from 0 to 2800
+    random_integers = np.random.randint(0, 2800, size=200)
+
+    print(random_integers)
+    return container[random_integers]
 
 def process_stims(raw_stims, stims, processor, model, save_path='output.gif'):
-    n_stims = 2800
+    n_stims = 200
     frames = []
     for i in range(n_stims):
         print(i)
@@ -40,7 +47,7 @@ def process_stims(raw_stims, stims, processor, model, save_path='output.gif'):
         #buf.close()
         #plt.close()
     # Create a GIF from the frames
-    frames[0].save(save_path, save_all=True, append_images=frames[1:], duration=650, loop=0)
+    frames[0].save(save_path, save_all=True, append_images=frames[1:], duration=1200, loop=0)
     buf.close()
     plt.close()
 
