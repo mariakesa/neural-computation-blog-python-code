@@ -103,7 +103,7 @@ class ProcessMovieRecordings:
 
     def process_single_trial(self, movie_stim_table, dff_traces, trial, embedding, random_state):
         stimuli = movie_stim_table.loc[movie_stim_table['repeat'] == trial]
-        X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.7, random_state=random_state)
+        X_train, X_test, y_train_inds, y_test_inds = train_test_split(embedding,stimuli['start'].values, test_size=0.2, random_state=random_state)
         y_train= dff_traces[:,y_train_inds]
         y_test= dff_traces[:,y_test_inds]
         return {'y_train': y_train, 'y_test': y_test, 'X_train': X_train, 'X_test': X_test}
@@ -141,7 +141,7 @@ class ProcessMovieRecordings:
                 session_dct[str(sess)+'_'+'raw_movies'+'_'+str(s)+'_'+str(trial)] = var_exps
                 #regression_vec_dct[str(sess)+'_'+str(m)+'_'+str(s)+'_'+str(trial)]=regr_vecs
         return session_dct#, regression_vec_dct
-    
+'''    
 import time
 start=time.time()
 a=ProcessMovieRecordings().make_regression_data(511510736, 'three_session_A')
@@ -224,9 +224,9 @@ def make_df():
         print(cnt)
         for s in sessions:
             try:
-                df, regr_vec_df=processor.make_regression_data(container_id, s)
+                df =processor.make_regression_data(container_id, s)
                 sess_dct[s]=df
-                regr_vec_dct[s]=regr_vec_df
+                #regr_vec_dct[s]=regr_vec_df
             except Exception as e:
                 print(f"Error processing container {container_id}, session {s}: {e}")
                 #traceback.print_exc()
@@ -234,7 +234,7 @@ def make_df():
         cnt+=1
     results=compile_dfs(sess_dct)
     #regr_dims=compile_dfs(regr_vec_dct)
-    results.to_csv('test.csv')
+    results.to_csv('raw_test_regression.csv')
     #regr_vec_dct.to_json('regr_dims.json')
     #https://stackoverflow.com/questions/26646362/numpy-array-is-not-json-serializable
     #json.dump(regr_vec_dct, codecs.open("regr_dims_test.json", 'w', encoding='utf-8'), 
@@ -248,9 +248,8 @@ def make_df():
 #pull_data()
 #end=time.time()
 #print('100 pulls time: ', end-start)
-
+import time
 start=time.time()
 make_df()
 end=time.time()
 print('100 pulls time: ', end-start)
-'''
